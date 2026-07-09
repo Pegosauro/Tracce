@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import 'leaflet/dist/leaflet.css';
 import './styles.css';
 import './dock.css';
+import './dockBehavior';
 import { App } from './App';
 
 if ('serviceWorker' in navigator) {
