@@ -11,11 +11,8 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     try {
       const point = await getCurrentPosition(8000);
       onComplete(true, point);
-      return;
     } catch {
       // The app remains usable with manual map selection when tiles are available.
-    }
-    finally {
       onComplete(true);
     }
   };
