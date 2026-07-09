@@ -1,0 +1,191 @@
+/* Sheet UI polish: place view, edit mode and new trace form. */
+.bottom-sheet {
+  scrollbar-width: thin;
+}
+
+.bottom-sheet h2 {
+  letter-spacing: -0.02em;
+}
+
+/* New trace sheet */
+.bottom-sheet:has(.meta-card):not(.place-sheet) .meta-card {
+  gap: 5px;
+  padding: 16px 18px;
+  border-radius: 24px;
+}
+
+.bottom-sheet:has(.meta-card):not(.place-sheet) .meta-card strong {
+  font-size: 18px;
+}
+
+.bottom-sheet:has(.meta-card):not(.place-sheet) .sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.bottom-sheet:has(.meta-card):not(.place-sheet) .sheet-actions .primary {
+  grid-column: 1 / -1;
+  min-height: 58px;
+  font-size: 18px;
+}
+
+/* Place sheet: calmer visual hierarchy */
+.place-sheet .place-head {
+  grid-template-columns: 1fr 52px 52px;
+  align-items: start;
+}
+
+.place-sheet .place-head h2 {
+  font-size: 30px;
+  line-height: 1.02;
+}
+
+.place-sheet .place-head p {
+  font-size: 18px;
+}
+
+.place-sheet .icon-button {
+  width: 52px;
+  height: 52px;
+  background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
+}
+
+.place-sheet .notes {
+  margin: 20px 0 18px;
+  font-size: 18px;
+  line-height: 1.42;
+}
+
+.place-sheet .technical {
+  gap: 7px;
+  padding: 16px 18px;
+  border-radius: 24px;
+}
+
+.place-sheet .technical span {
+  font-size: 15px;
+}
+
+.place-sheet .technical strong {
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.place-sheet .sheet-actions.vertical {
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 18px;
+}
+
+.place-sheet .sheet-actions.vertical button,
+.place-sheet .sheet-actions.vertical a {
+  width: 100%;
+  min-height: 58px;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.place-sheet .sheet-actions.vertical .danger {
+  margin-top: 10px;
+  border-color: color-mix(in srgb, var(--danger) 22%, var(--border));
+  background: color-mix(in srgb, var(--danger) 5%, var(--surface-muted));
+}
+
+/* Edit mode, detected by the photo-add control. */
+.place-sheet:has(.photo-add) {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.place-sheet:has(.photo-add) .place-head {
+  position: sticky;
+  top: -10px;
+  z-index: 2;
+  margin: -10px -4px 8px;
+  padding: 10px 4px 8px;
+  background: linear-gradient(180deg, var(--surface) 76%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.place-sheet:has(.photo-add) label {
+  margin-top: 14px;
+  font-size: 15px;
+}
+
+.place-sheet:has(.photo-add) input,
+.place-sheet:has(.photo-add) select,
+.place-sheet:has(.photo-add) textarea {
+  min-height: 54px;
+  border-radius: 22px;
+  font-size: 16px;
+}
+
+.place-sheet:has(.photo-add) textarea {
+  min-height: 128px;
+}
+
+.place-sheet:has(.photo-add) .photo-add {
+  min-height: 50px;
+  margin-top: 16px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 16px;
+}
+
+.place-sheet:has(.photo-add) .technical {
+  margin-top: 18px;
+}
+
+.place-sheet:has(.photo-add) .sheet-actions.vertical {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: grid;
+  gap: 10px;
+  margin: 18px -4px -8px;
+  padding: 14px 4px max(10px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent, var(--surface) 20%, var(--surface));
+  backdrop-filter: blur(18px);
+}
+
+.place-sheet:has(.photo-add) .sheet-actions.vertical a,
+.place-sheet:has(.photo-add) .sheet-actions.vertical button:nth-of-type(1) {
+  display: none;
+}
+
+.place-sheet:has(.photo-add) .sheet-actions.vertical button:nth-of-type(2) {
+  order: 1;
+}
+
+.place-sheet:has(.photo-add) .sheet-actions.vertical .primary {
+  order: 2;
+  min-height: 60px;
+  font-size: 18px;
+}
+
+.place-sheet:has(.photo-add) .sheet-actions.vertical .danger {
+  order: 3;
+  margin-top: 12px;
+}
+
+@media (max-width: 374px) {
+  .place-sheet .place-head {
+    grid-template-columns: 1fr 48px 48px;
+  }
+
+  .place-sheet .place-head h2 {
+    font-size: 27px;
+  }
+
+  .place-sheet .icon-button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .place-sheet .sheet-actions.vertical button,
+  .place-sheet .sheet-actions.vertical a {
+    min-height: 54px;
+    font-size: 16px;
+  }
+}
