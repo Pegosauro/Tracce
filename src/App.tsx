@@ -15,7 +15,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppSettings, Category, Filters, GeoPoint, Place, PlacePhoto, Section } from './app/types';
 import { categoryRepository } from './data/repositories/categoryRepository';
 import { isIncompletePlace, placeRepository } from './data/repositories/placeRepository';
@@ -72,6 +72,7 @@ export const App = () => {
   const [draft, setDraft] = useState<DraftPlace | null>(null);
   const [manualMode, setManualMode] = useState<ManualMode>(null);
   const [currentPosition, setCurrentPosition] = useState<GeoPoint | null>(null);
+  const autoLocateStartedRef = useRef(false);
   const [mapUnavailable, setMapUnavailable] = useState(false);
   const [forceMapUnavailable, setForceMapUnavailable] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -119,19 +120,25 @@ export const App = () => {
     if (point) setCurrentPosition(point);
   };
 
-  const locateCurrentPosition = async () => {
+  const locateCurrentPosition = useCallback(async (options?: { focusMap?: boolean }) => {
     try {
       setNotice('Rilevo la posizione...');
       const point = await getCurrentPosition();
       setCurrentPosition(point);
-      setActiveSection('map');
+      if (options?.focusMap !== false) setActiveSection('map');
       setNotice(null);
       return point;
     } catch {
       setNotice('Posizione attuale non disponibile.');
       return null;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!settings?.onboardingCompleted || autoLocateStartedRef.current) return;
+    autoLocateStartedRef.current = true;
+    void locateCurrentPosition({ focusMap: false });
+  }, [locateCurrentPosition, settings?.onboardingCompleted]);
 
   const startTrace = async () => {
     try {
