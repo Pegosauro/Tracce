@@ -1,14 +1,17 @@
+import { LocateFixed } from 'lucide-react';
 import L, { type DivIcon, type Map as LeafletMap } from 'leaflet';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Category, Place } from '../../app/types';
+import type { Category, GeoPoint, Place } from '../../app/types';
 import { isIncompletePlace } from '../../data/repositories/placeRepository';
 
 type MapViewProps = {
   places: Place[];
   categories: Category[];
+  currentPosition: GeoPoint | null;
   selectedPlaceId?: string;
   manualSelect: boolean;
   forcedUnavailable: boolean;
+  onLocateUser: () => Promise<GeoPoint | null>;
   onOpenPlace: (place: Place) => void;
   onToggleFavorite: (place: Place) => void;
   onManualConfirm: (latitude: number, longitude: number) => void;
@@ -39,12 +42,22 @@ const makeClusterIcon = (count: number): DivIcon =>
     iconAnchor: [22, 22],
   });
 
+const makeUserLocationIcon = (): DivIcon =>
+  L.divIcon({
+    className: 'tracce-user-location-wrap',
+    html: '<span class="tracce-user-location"></span>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  });
+
 export const MapView = ({
   places,
   categories,
+  currentPosition,
   selectedPlaceId,
   manualSelect,
   forcedUnavailable,
+  onLocateUser,
   onOpenPlace,
   onToggleFavorite,
   onManualConfirm,
@@ -55,8 +68,11 @@ export const MapView = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
   const [zoom, setZoom] = useState(13);
   const [tileFailed, setTileFailed] = useState(false);
+  const [userPositionOutOfView, setUserPositionOutOfView] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const categoryById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
   const unavailable = forcedUnavailable || tileFailed;
@@ -89,8 +105,41 @@ export const MapView = ({
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
+      userMarkerRef.current = null;
     };
   }, [forcedUnavailable, onMapUnavailable]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !currentPosition) {
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = null;
+      setUserPositionOutOfView(false);
+      return;
+    }
+
+    const latLng: [number, number] = [currentPosition.latitude, currentPosition.longitude];
+    if (!userMarkerRef.current) {
+      userMarkerRef.current = L.marker(latLng, {
+        icon: makeUserLocationIcon(),
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: 900,
+      }).addTo(map);
+    } else {
+      userMarkerRef.current.setLatLng(latLng);
+    }
+
+    const updateUserVisibility = () => {
+      setUserPositionOutOfView(!map.getBounds().pad(-0.04).contains(latLng));
+    };
+
+    updateUserVisibility();
+    map.on('moveend zoomend resize', updateUserVisibility);
+    return () => {
+      map.off('moveend zoomend resize', updateUserVisibility);
+    };
+  }, [currentPosition]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -135,6 +184,16 @@ export const MapView = ({
     if (center) onManualConfirm(center.lat, center.lng);
   };
 
+  const showUserLocation = async () => {
+    setLocating(true);
+    const point = await onLocateUser();
+    if (point && mapRef.current) {
+      mapRef.current.flyTo([point.latitude, point.longitude], Math.max(16, mapRef.current.getZoom()), { duration: 0.45 });
+      setUserPositionOutOfView(false);
+    }
+    setLocating(false);
+  };
+
   if (unavailable) {
     return (
       <section className="map-unavailable">
@@ -153,6 +212,16 @@ export const MapView = ({
   return (
     <div className="map-stage">
       <div ref={containerRef} className="leaflet-host" />
+      {currentPosition && userPositionOutOfView && !manualSelect && (
+        <button
+          className={`floating locate-user ${locating ? 'is-locating' : ''}`}
+          onClick={showUserLocation}
+          aria-label="Mostra la mia posizione"
+          disabled={locating}
+        >
+          <LocateFixed size={22} />
+        </button>
+      )}
       {manualSelect && (
         <div className="manual-picker" aria-live="polite">
           <div className="center-pin" />
