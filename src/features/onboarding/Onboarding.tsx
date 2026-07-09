@@ -1,17 +1,21 @@
 import { Camera, Database, MapPinned, Navigation, ShieldCheck } from 'lucide-react';
+import type { GeoPoint } from '../../app/types';
 import { getCurrentPosition } from '../../shared/geo/geolocation';
 
 type OnboardingProps = {
-  onComplete: (gpsAsked: boolean) => void;
+  onComplete: (gpsAsked: boolean, point?: GeoPoint) => void;
 };
 
 export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const requestGps = async () => {
     try {
-      await getCurrentPosition(8000);
+      const point = await getCurrentPosition(8000);
+      onComplete(true, point);
+      return;
     } catch {
       // The app remains usable with manual map selection when tiles are available.
-    } finally {
+    }
+    finally {
       onComplete(true);
     }
   };
