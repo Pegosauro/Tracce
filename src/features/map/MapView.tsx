@@ -21,6 +21,14 @@ type MapViewProps = {
 };
 
 const fallbackCenter: [number, number] = [45.4642, 9.19];
+const minLiveUpdateMs = 3000;
+const minLiveMoveMeters = 2;
+
+const approximateDistanceMeters = (a: GeoPoint, b: GeoPoint) => {
+  const latMeters = (b.latitude - a.latitude) * 111_320;
+  const lngMeters = (b.longitude - a.longitude) * 111_320 * Math.cos((a.latitude * Math.PI) / 180);
+  return Math.hypot(latMeters, lngMeters);
+};
 
 const makeIcon = (category: Category | undefined, place?: Place): DivIcon => {
   const color = place?.isFavorite ? '#FFD60A' : category?.color ?? '#08A88A';
@@ -71,6 +79,9 @@ export const MapView = ({
   const userMarkerRef = useRef<L.Marker | null>(null);
   const locateButtonRef = useRef<HTMLButtonElement | null>(null);
   const autoLocateClickDoneRef = useRef(false);
+  const lastLivePositionRef = useRef<GeoPoint | null>(null);
+  const lastLiveUpdateRef = useRef(0);
+  const [livePosition, setLivePosition] = useState<GeoPoint | null>(currentPosition);
   const [zoom, setZoom] = useState(13);
   const [tileFailed, setTileFailed] = useState(false);
   const [userPositionOutOfView, setUserPositionOutOfView] = useState(false);
@@ -78,6 +89,40 @@ export const MapView = ({
 
   const categoryById = useMemo(() => new Map(categories.map((category) => [category.id, category])), [categories]);
   const unavailable = forcedUnavailable || tileFailed;
+  const visibleUserPosition = livePosition ?? currentPosition;
+
+  useEffect(() => {
+    setLivePosition(currentPosition);
+    lastLivePositionRef.current = currentPosition;
+  }, [currentPosition]);
+
+  useEffect(() => {
+    if (!currentPosition || !navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const next: GeoPoint = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracyMeters: position.coords.accuracy,
+        };
+        const now = Date.now();
+        const previous = lastLivePositionRef.current;
+        const movedEnough = !previous || approximateDistanceMeters(previous, next) >= minLiveMoveMeters;
+        const waitedEnough = now - lastLiveUpdateRef.current >= minLiveUpdateMs;
+        const accuracyImproved = Boolean(previous?.accuracyMeters && next.accuracyMeters && next.accuracyMeters < previous.accuracyMeters);
+
+        if (!movedEnough && !waitedEnough && !accuracyImproved) return;
+        lastLiveUpdateRef.current = now;
+        lastLivePositionRef.current = next;
+        setLivePosition(next);
+      },
+      () => undefined,
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [currentPosition]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current || forcedUnavailable) return;
@@ -115,14 +160,14 @@ export const MapView = ({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !currentPosition) {
+    if (!map || !visibleUserPosition) {
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       setUserPositionOutOfView(false);
       return;
     }
 
-    const latLng: [number, number] = [currentPosition.latitude, currentPosition.longitude];
+    const latLng: [number, number] = [visibleUserPosition.latitude, visibleUserPosition.longitude];
     if (!userMarkerRef.current) {
       userMarkerRef.current = L.marker(latLng, {
         icon: makeUserLocationIcon(),
@@ -143,10 +188,10 @@ export const MapView = ({
     return () => {
       map.off('moveend zoomend resize', updateUserVisibility);
     };
-  }, [currentPosition]);
+  }, [visibleUserPosition]);
 
   useEffect(() => {
-    if (!currentPosition || !userPositionOutOfView || manualSelect || autoLocateClickDoneRef.current) return;
+    if (!visibleUserPosition || !userPositionOutOfView || manualSelect || autoLocateClickDoneRef.current) return;
 
     const timer = window.setTimeout(() => {
       const button = locateButtonRef.current;
@@ -156,7 +201,7 @@ export const MapView = ({
     }, 900);
 
     return () => window.clearTimeout(timer);
-  }, [currentPosition, manualSelect, userPositionOutOfView]);
+  }, [manualSelect, userPositionOutOfView, visibleUserPosition]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -205,6 +250,7 @@ export const MapView = ({
     setLocating(true);
     const point = await onLocateUser();
     if (point && mapRef.current) {
+      setLivePosition(point);
       mapRef.current.flyTo([point.latitude, point.longitude], Math.max(16, mapRef.current.getZoom()), { duration: 0.45 });
       setUserPositionOutOfView(false);
     }
@@ -229,7 +275,7 @@ export const MapView = ({
   return (
     <div className="map-stage">
       <div ref={containerRef} className="leaflet-host" />
-      {currentPosition && userPositionOutOfView && !manualSelect && (
+      {visibleUserPosition && userPositionOutOfView && !manualSelect && (
         <button
           ref={locateButtonRef}
           className={`floating locate-user ${locating ? 'is-locating' : ''}`}
