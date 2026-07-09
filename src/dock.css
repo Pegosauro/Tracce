@@ -1,64 +1,73 @@
-/* Compact bottom dock inspired by the approved mockup. */
+/* Compact bottom dock: closed shows only the active section, open shows all sections. */
 .section-dock {
   right: max(88px, calc(env(safe-area-inset-right) + 88px));
   left: max(14px, env(safe-area-inset-left));
   bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
   z-index: 660;
-  gap: 10px;
+  display: flex;
+  align-items: center;
   pointer-events: none;
 }
 
 .section-dock .menu {
+  display: none;
+}
+
+.section-pill {
+  display: flex;
   width: 58px;
   height: 58px;
   flex: 0 0 58px;
-  border: 2px solid color-mix(in srgb, var(--border) 72%, transparent);
-  background: color-mix(in srgb, var(--surface-solid) 96%, transparent);
-  color: var(--text);
-  box-shadow: 0 12px 30px rgba(18, 34, 30, 0.18);
-  pointer-events: auto;
-}
-
-.section-dock .menu svg {
-  width: 30px;
-  height: 30px;
-  stroke-width: 3;
-}
-
-.section-pill,
-.section-dock.is-open .section-pill {
-  display: flex;
-  width: auto;
-  min-width: 206px;
-  max-width: 260px;
-  height: 58px;
-  flex: 1 1 auto;
-  gap: 5px;
   align-items: center;
-  justify-content: space-between;
-  overflow: visible;
-  padding: 5px 8px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 5px;
   border: 2px solid color-mix(in srgb, var(--border) 74%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
   box-shadow: 0 12px 30px rgba(18, 34, 30, 0.16);
-  opacity: 1;
-  transform: none;
   backdrop-filter: blur(20px);
   pointer-events: auto;
-  transition: none;
+  transition: width 0.2s ease, flex-basis 0.2s ease, padding 0.2s ease;
+}
+
+.section-dock.is-open .section-pill {
+  width: 294px;
+  max-width: calc(100vw - 116px);
+  flex-basis: 294px;
+  gap: 5px;
+  justify-content: space-between;
+  padding: 5px 8px;
 }
 
 .section-pill button {
-  display: grid;
-  min-width: 0;
+  display: none;
+  width: 46px;
   height: 46px;
-  flex: 1 1 0;
+  min-width: 0;
+  flex: 0 0 46px;
   place-items: center;
   padding: 0;
+  border: 0;
   border-radius: 999px;
+  background: transparent;
   color: color-mix(in srgb, var(--text) 82%, var(--muted));
   font-size: 0;
+  cursor: pointer;
+}
+
+.section-pill button.active {
+  display: grid;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  box-shadow:
+    inset 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.section-dock.is-open .section-pill button {
+  display: grid;
+  flex: 1 1 0;
 }
 
 .section-pill button span {
@@ -69,14 +78,6 @@
   width: 29px;
   height: 29px;
   stroke-width: 2.5;
-}
-
-.section-pill button.active {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  box-shadow:
-    inset 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent),
-    0 0 0 1px rgba(255, 255, 255, 0.72);
 }
 
 .section-pill button.active svg {
@@ -101,24 +102,25 @@
 @media (max-width: 374px) {
   .section-dock {
     right: max(80px, calc(env(safe-area-inset-right) + 80px));
-    gap: 8px;
   }
 
-  .section-dock .menu {
+  .section-pill {
     width: 54px;
     height: 54px;
     flex-basis: 54px;
   }
 
-  .section-pill,
   .section-dock.is-open .section-pill {
-    min-width: 184px;
-    height: 54px;
+    width: 260px;
+    max-width: calc(100vw - 106px);
+    flex-basis: 260px;
     padding: 5px 7px;
   }
 
   .section-pill button {
+    width: 42px;
     height: 42px;
+    flex-basis: 42px;
   }
 
   .section-pill button svg {
@@ -133,9 +135,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .section-dock .menu,
-  .section-pill,
-  .section-dock.is-open .section-pill {
+  .section-pill {
     border-color: rgba(223, 255, 247, 0.14);
     background: color-mix(in srgb, var(--control) 92%, transparent);
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
