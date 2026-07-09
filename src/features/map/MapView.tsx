@@ -69,6 +69,8 @@ export const MapView = ({
   const mapRef = useRef<LeafletMap | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const locateButtonRef = useRef<HTMLButtonElement | null>(null);
+  const autoLocateClickDoneRef = useRef(false);
   const [zoom, setZoom] = useState(13);
   const [tileFailed, setTileFailed] = useState(false);
   const [userPositionOutOfView, setUserPositionOutOfView] = useState(false);
@@ -106,6 +108,8 @@ export const MapView = ({
       mapRef.current = null;
       layerRef.current = null;
       userMarkerRef.current = null;
+      locateButtonRef.current = null;
+      autoLocateClickDoneRef.current = false;
     };
   }, [forcedUnavailable, onMapUnavailable]);
 
@@ -140,6 +144,19 @@ export const MapView = ({
       map.off('moveend zoomend resize', updateUserVisibility);
     };
   }, [currentPosition]);
+
+  useEffect(() => {
+    if (!currentPosition || !userPositionOutOfView || manualSelect || autoLocateClickDoneRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      const button = locateButtonRef.current;
+      if (!button || button.disabled) return;
+      autoLocateClickDoneRef.current = true;
+      button.click();
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [currentPosition, manualSelect, userPositionOutOfView]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -214,6 +231,7 @@ export const MapView = ({
       <div ref={containerRef} className="leaflet-host" />
       {currentPosition && userPositionOutOfView && !manualSelect && (
         <button
+          ref={locateButtonRef}
           className={`floating locate-user ${locating ? 'is-locating' : ''}`}
           onClick={showUserLocation}
           aria-label="Mostra la mia posizione"
