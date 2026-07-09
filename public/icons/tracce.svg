@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tracce">
+  <defs>
+    <linearGradient id="g" x1="93" x2="419" y1="77" y2="435" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1ED6B1"/>
+      <stop offset="1" stop-color="#087C78"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#g)" d="M256 31c-91.7 0-166 74.3-166 166 0 128.6 166 284 166 284s166-155.4 166-284c0-91.7-74.3-166-166-166Z"/>
+  <path fill="#fff" d="M326.2 165.7c-23.7-19.5-52.5-6.4-70.2 14.8-17.7-21.2-46.5-34.3-70.2-14.8-27.5 22.7-18.3 64.5 9 93.4 18.2 19.3 40.6 34.5 61.2 48.8 20.6-14.3 43-29.5 61.2-48.8 27.3-28.9 36.5-70.7 9-93.4Z"/>
+  <circle cx="219" cy="223" r="13" fill="#0B877E"/>
+  <circle cx="256" cy="211" r="15" fill="#0B877E"/>
+  <circle cx="293" cy="223" r="13" fill="#0B877E"/>
+  <path fill="#0B877E" d="M218 260c20-23 55-23 76 0 14 16 4 42-18 42h-40c-22 0-32-26-18-42Z"/>
+</svg>
