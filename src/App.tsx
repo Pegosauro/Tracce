@@ -113,9 +113,24 @@ export const App = () => {
       .finally(() => setBooting(false));
   }, []);
 
-  const completeOnboarding = async (gpsAsked: boolean) => {
+  const completeOnboarding = async (gpsAsked: boolean, point?: GeoPoint) => {
     const next = await settingsRepository.update({ onboardingCompleted: true, gpsPermissionAsked: gpsAsked });
     setSettings(next);
+    if (point) setCurrentPosition(point);
+  };
+
+  const locateCurrentPosition = async () => {
+    try {
+      setNotice('Rilevo la posizione...');
+      const point = await getCurrentPosition();
+      setCurrentPosition(point);
+      setActiveSection('map');
+      setNotice(null);
+      return point;
+    } catch {
+      setNotice('Posizione attuale non disponibile.');
+      return null;
+    }
   };
 
   const startTrace = async () => {
@@ -210,13 +225,7 @@ export const App = () => {
   };
 
   const requestNearbyPosition = async () => {
-    try {
-      const point = await getCurrentPosition();
-      setCurrentPosition(point);
-      setNotice(null);
-    } catch {
-      setNotice('Posizione attuale non disponibile.');
-    }
+    await locateCurrentPosition();
   };
 
   const removeCategory = async (category: Category) => {
@@ -238,9 +247,11 @@ export const App = () => {
         <MapView
           places={filteredPlaces}
           categories={categories}
+          currentPosition={currentPosition}
           selectedPlaceId={selectedPlaceId}
           manualSelect={Boolean(manualMode)}
           forcedUnavailable={forceMapUnavailable}
+          onLocateUser={locateCurrentPosition}
           onOpenPlace={(place) => {
             setSelectedPlaceId(place.id);
             setDetailExpanded(false);
