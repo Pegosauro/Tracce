@@ -88,7 +88,7 @@ export const MapView = ({
 
     L.control.attribution({ prefix: false, position: 'topleft' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>',
+      attribution: '&copy; OpenStreetMap',
       maxZoom: 19,
     })
       .on('tileerror', () => {
