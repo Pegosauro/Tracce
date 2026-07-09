@@ -27,6 +27,12 @@ npm run dev
 npm run build
 ```
 
+## Pubblicazione
+
+La pagina pubblica viene distribuita con GitHub Pages:
+
+https://Pegosauro.github.io/Tracce/
+
 ## Stack
 
 - React
