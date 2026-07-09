@@ -86,7 +86,7 @@ export const MapView = ({
       preferCanvas: true,
     }).setView(fallbackCenter, 13);
 
-    L.control.attribution({ prefix: false, position: 'bottomright' }).addTo(map);
+    L.control.attribution({ prefix: false, position: 'topleft' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap',
       maxZoom: 19,
