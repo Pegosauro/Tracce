@@ -1,34 +1,27 @@
 const syncDockState = () => {
   const dock = document.querySelector<HTMLElement>('.section-dock');
   const pill = dock?.querySelector<HTMLElement>('.section-pill');
-  if (!dock || !pill) return;
+  const menuButton = dock?.querySelector<HTMLButtonElement>('.menu');
+  if (!dock || !pill || !menuButton) return;
 
   const activeButton = pill.querySelector<HTMLButtonElement>('button.active');
   pill.querySelectorAll<HTMLButtonElement>('button').forEach((button) => {
     button.toggleAttribute('data-current-section', button === activeButton);
   });
-};
 
-const openDockFromCurrentButton = (event: Event) => {
-  const target = event.target instanceof Element ? event.target : null;
-  const currentButton = target?.closest<HTMLButtonElement>('.section-pill button.active');
-  if (!currentButton) return;
+  if (!activeButton) return;
 
-  const dock = currentButton.closest<HTMLElement>('.section-dock');
-  if (!dock || dock.classList.contains('is-open')) return;
+  const nextIcon = activeButton.innerHTML;
+  if (menuButton.dataset.sectionIcon !== nextIcon) {
+    menuButton.dataset.sectionIcon = nextIcon;
+    menuButton.innerHTML = nextIcon;
+  }
 
-  const menuButton = dock.querySelector<HTMLButtonElement>('.menu');
-  if (!menuButton) return;
-
-  event.preventDefault();
-  event.stopPropagation();
-  event.stopImmediatePropagation();
-  menuButton.click();
+  const activeLabel = activeButton.textContent?.trim() || 'Menu sezioni';
+  menuButton.setAttribute('aria-label', `Apri menu sezioni. Sezione attiva: ${activeLabel}`);
 };
 
 const startDockBehavior = () => {
-  document.addEventListener('click', openDockFromCurrentButton, true);
-
   const observer = new MutationObserver(syncDockState);
   observer.observe(document.body, {
     subtree: true,
