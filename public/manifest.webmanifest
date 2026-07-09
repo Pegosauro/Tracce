@@ -1,0 +1,19 @@
+{
+  "name": "Tracce",
+  "short_name": "Tracce",
+  "description": "I tuoi luoghi, sempre con te",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6fbf9",
+  "theme_color": "#08a88a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/tracce.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
