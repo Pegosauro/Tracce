@@ -18,7 +18,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
 
   return (
     <main className="onboarding">
-      <img src="/icons/tracce.svg" alt="" className="app-logo" />
+      <img src={`${import.meta.env.BASE_URL}icons/tracce.svg`} alt="" className="app-logo" />
       <h1>Tracce</h1>
       <p className="payoff">I tuoi luoghi, sempre con te</p>
       <div className="onboarding-list">
