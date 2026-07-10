@@ -331,7 +331,6 @@ export const App = () => {
             setSelectedPlaceId(place.id);
             setDetailExpanded(false);
           }}
-          onToggleFavorite={toggleFavorite}
           onManualConfirm={handleManualConfirm}
           onManualCancel={() => setManualMode(null)}
           onMapUnavailable={setMapUnavailable}

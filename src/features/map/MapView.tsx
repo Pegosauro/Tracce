@@ -13,7 +13,6 @@ type MapViewProps = {
   forcedUnavailable: boolean;
   onLocateUser: () => Promise<GeoPoint | null>;
   onOpenPlace: (place: Place) => void;
-  onToggleFavorite: (place: Place) => void;
   onManualConfirm: (latitude: number, longitude: number) => void;
   onManualCancel: () => void;
   onMapUnavailable: (value: boolean) => void;
@@ -31,15 +30,14 @@ const approximateDistanceMeters = (a: GeoPoint, b: GeoPoint) => {
   return Math.hypot(latMeters, lngMeters);
 };
 
-const makeIcon = (category: Category | undefined, place?: Place): DivIcon => {
+const makeIcon = (category: Category | undefined, place: Place, selected: boolean): DivIcon => {
   const color = place?.isFavorite ? '#FFD60A' : category?.color ?? '#08A88A';
-  const incomplete = place ? isIncompletePlace(place) : false;
+  const incomplete = isIncompletePlace(place);
   return L.divIcon({
     className: 'tracce-marker-wrap',
-    html: `<span class="tracce-marker ${incomplete ? 'is-incomplete' : ''}" style="--marker:${color}">${category?.icon === 'star' ? '★' : ''}</span>`,
+    html: `<span class="tracce-marker ${incomplete ? 'is-incomplete' : ''} ${selected ? 'is-selected' : ''}" style="--marker:${color}">${category?.icon === 'star' ? '★' : ''}</span>`,
     iconSize: [34, 42],
     iconAnchor: [17, 36],
-    popupAnchor: [0, -28],
   });
 };
 
@@ -68,7 +66,6 @@ export const MapView = ({
   forcedUnavailable,
   onLocateUser,
   onOpenPlace,
-  onToggleFavorite,
   onManualConfirm,
   onManualCancel,
   onMapUnavailable,
@@ -242,21 +239,14 @@ export const MapView = ({
 
     places.forEach((place) => {
       const category = categoryById.get(place.categoryId);
-      const marker = L.marker([place.latitude, place.longitude], { icon: makeIcon(category, place) }).addTo(layer);
-      const label = place.isFavorite || zoom >= 15 ? `<b>${place.name?.trim() || 'Luogo senza nome'}</b><br/>` : '';
-      marker.bindPopup(
-        `<div class="map-popup">${label}<span>${category?.name ?? 'Senza categoria'}</span><div><button data-action="open">Apri scheda</button><button data-action="maps">Maps</button><button data-action="favorite">${place.isFavorite ? 'Togli preferito' : 'Preferito'}</button></div></div>`,
-      );
-      marker.on('popupopen', (event) => {
-        const popup = event.popup.getElement();
-        popup?.querySelector('[data-action="open"]')?.addEventListener('click', () => onOpenPlace(place));
-        popup?.querySelector('[data-action="maps"]')?.addEventListener('click', () => {
-          window.open(`https://maps.google.com/?q=${place.latitude},${place.longitude}`, '_blank', 'noopener,noreferrer');
-        });
-        popup?.querySelector('[data-action="favorite"]')?.addEventListener('click', () => onToggleFavorite(place));
-      });
+      const selected = place.id === selectedPlaceId;
+      const marker = L.marker([place.latitude, place.longitude], {
+        icon: makeIcon(category, place, selected),
+        zIndexOffset: selected ? 1000 : 0,
+      }).addTo(layer);
+      marker.on('click', () => onOpenPlace(place));
     });
-  }, [categoryById, onOpenPlace, onToggleFavorite, places, zoom]);
+  }, [categoryById, onOpenPlace, places, selectedPlaceId, zoom]);
 
   useEffect(() => {
     const selected = places.find((place) => place.id === selectedPlaceId);
