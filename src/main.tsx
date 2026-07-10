@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import './styles.css';
 import './dock.css';
 import './sheetPolish.css';
+import './recovery.css';
 import './dockBehavior';
 import { App } from './App';
 
