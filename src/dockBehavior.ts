@@ -1,4 +1,21 @@
+const leaveTraceIconUrl = `${import.meta.env.BASE_URL}icons/lascia-traccia.svg`;
+
+const syncLeaveTraceIcon = () => {
+  const button = document.querySelector<HTMLButtonElement>('.floating.leave-trace');
+  if (!button || button.querySelector('img[data-trace-icon]')) return;
+
+  const image = document.createElement('img');
+  image.src = leaveTraceIconUrl;
+  image.alt = '';
+  image.draggable = false;
+  image.setAttribute('aria-hidden', 'true');
+  image.dataset.traceIcon = 'true';
+  button.replaceChildren(image);
+};
+
 const syncDockState = () => {
+  syncLeaveTraceIcon();
+
   const dock = document.querySelector<HTMLElement>('.section-dock');
   const pill = dock?.querySelector<HTMLElement>('.section-pill');
   const menuButton = dock?.querySelector<HTMLButtonElement>('.menu');
