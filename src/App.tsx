@@ -1,16 +1,21 @@
 import {
+  Camera,
   Check,
   ChevronUp,
+  Ellipsis,
   Filter,
+  Info,
   List,
   LocateFixed,
   MapPinned,
   MapPin,
   Menu,
   Navigation,
+  Pencil,
   Plus,
   RefreshCw,
   Search,
+  Share2,
   Settings,
   Star,
   Trash2,
@@ -592,93 +597,201 @@ const PlaceSheet = ({
   onAddPhoto: (file: File) => void;
 }) => {
   const [form, setForm] = useState(place);
-  useEffect(() => setForm(place), [place]);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [openPhotoId, setOpenPhotoId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setForm(place);
+    setMoreOpen(false);
+    setDetailsOpen(false);
+    setNotesOpen(false);
+    setOpenPhotoId(null);
+  }, [place]);
+
+  const mapsUrl = `https://maps.apple.com/?ll=${place.latitude},${place.longitude}`;
+  const shareUrl = `https://maps.google.com/?q=${place.latitude},${place.longitude}`;
+  const openPhoto = place.photos.find((photo) => photo.id === openPhotoId);
 
   const save = () => {
     onSave({ ...form, tags: form.tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean) });
     onEditToggle();
   };
 
+  const sharePlace = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: place.name || 'Tracce', url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+    } catch {
+      // Closing the native share sheet is not an application error.
+    }
+  };
+
   return (
-    <Sheet className={`place-sheet ${expanded ? 'expanded' : ''}`}>
+    <Sheet className={`place-sheet ${expanded ? 'expanded' : ''} ${editing ? 'is-editing' : ''}`}>
       <div className="place-head">
-        <div>
+        <div className="place-title-block">
           <h2>{place.name?.trim() || 'Luogo senza nome'}</h2>
           <p>{categoryLabel(categories, place.categoryId)}</p>
+          {isIncompletePlace(place) && <span className="badge">Da completare</span>}
         </div>
         <button className="icon-button" onClick={onToggleFavorite} aria-label="Preferito"><Star size={22} fill={place.isFavorite ? 'currentColor' : 'none'} /></button>
         <button className="icon-button" onClick={onClose} aria-label="Chiudi"><X size={21} /></button>
       </div>
-      {isIncompletePlace(place) && <span className="badge">Da completare</span>}
       {!expanded && (
         <div className="sheet-actions compact">
           <button onClick={onExpand}><ChevronUp size={16} /> Apri scheda</button>
-          <a href={`https://maps.apple.com/?ll=${place.latitude},${place.longitude}`} target="_blank" rel="noreferrer">Apri in Maps</a>
+          <a href={mapsUrl} target="_blank" rel="noreferrer">Apri in Maps</a>
         </div>
       )}
       {expanded && (
-        <div className="expanded-content">
+        <div className={`expanded-content place-details-content ${editing ? 'is-editing' : ''}`}>
           {editing ? (
             <>
+              <PhotoRail
+                photos={form.photos}
+                editing
+                onRemove={(photoId) => setForm({ ...form, photos: form.photos.filter((photo) => photo.id !== photoId) })}
+                onAddPhoto={onAddPhoto}
+                onOpenPhoto={setOpenPhotoId}
+              />
               <label>Nome<input value={form.name ?? ''} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
               <label>Categoria<select value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
                 {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </select></label>
               <label>Tag<input value={form.tags.join(', ')} onChange={(event) => setForm({ ...form, tags: parseTags(event.target.value) })} placeholder="ombra, panorama" /></label>
               <label>Note<textarea value={form.notes ?? ''} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
+              <div className="place-edit-actions">
+                <button onClick={onEditToggle}><X size={18} /> Annulla</button>
+                <button className="primary" onClick={save}><Check size={18} /> Salva</button>
+              </div>
             </>
           ) : (
             <>
-              <PhotoRail photos={place.photos} editing={false} onRemove={() => undefined} />
-              <div className="tag-row">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-              <p className="notes">{place.notes || 'Nessuna nota.'}</p>
+              <PhotoRail
+                photos={place.photos}
+                onAddPhoto={onAddPhoto}
+                onOpenPhoto={setOpenPhotoId}
+              />
+              {place.tags.length > 0 && <div className="tag-row place-tags">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}
+              {place.notes ? (
+                <button className="note-preview" onClick={() => setNotesOpen(true)}>
+                  <span>Note</span>
+                  <p>{place.notes}</p>
+                </button>
+              ) : (
+                <button className="note-preview is-empty" onClick={onEditToggle}><Plus size={17} /> Aggiungi una nota</button>
+              )}
+
+              <div className="place-action-bar">
+                <a href={mapsUrl} target="_blank" rel="noreferrer"><MapPinned size={20} /><span>Maps</span></a>
+                <button onClick={sharePlace}><Share2 size={20} /><span>Condividi</span></button>
+                <button onClick={onEditToggle}><Pencil size={20} /><span>Modifica</span></button>
+                <button className={moreOpen ? 'active' : ''} onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}><Ellipsis size={21} /><span>Altro</span></button>
+              </div>
+
+              {moreOpen && (
+                <div className="place-more-menu" role="menu">
+                  <button onClick={() => { setDetailsOpen(true); setMoreOpen(false); }}><Info size={18} /> Dettagli luogo</button>
+                  <button onClick={onEditPosition}><Navigation size={18} /> Modifica posizione</button>
+                  <button className="danger" onClick={onDelete}><Trash2 size={18} /> Elimina luogo</button>
+                </div>
+              )}
             </>
           )}
-          <PhotoRail
-            photos={editing ? form.photos : []}
-            editing={editing}
-            onRemove={(photoId) => setForm({ ...form, photos: form.photos.filter((photo) => photo.id !== photoId) })}
-          />
-          {editing && (
-            <label className="photo-add">
-              <Plus size={18} /> Aggiungi foto
-              <input type="file" accept="image/*" capture="environment" onChange={(event) => event.target.files?.[0] && onAddPhoto(event.target.files[0])} />
-            </label>
-          )}
-          <div className="technical">
-            <span>Coordinate</span><strong>{place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}</strong>
-            <span>Precisione GPS</span><strong>{place.accuracyMeters ? `± ${Math.round(place.accuracyMeters)} m` : 'n/d'}</strong>
-            <span>Creato il</span><strong>{new Date(place.createdAt).toLocaleString('it-IT')}</strong>
-            <span>Ultima modifica</span><strong>{new Date(place.updatedAt).toLocaleString('it-IT')}</strong>
-          </div>
-          <div className="sheet-actions vertical">
-            <a href={`https://maps.google.com/?q=${place.latitude},${place.longitude}`} target="_blank" rel="noreferrer">Apri in Google Maps</a>
-            <button onClick={async () => navigator.share?.({ title: place.name || 'Tracce', url: `https://maps.google.com/?q=${place.latitude},${place.longitude}` })}>Condividi link Maps</button>
-            <button onClick={onEditPosition}>Modifica posizione</button>
-            {editing ? <button className="primary" onClick={save}><Check size={17} /> Salva modifiche</button> : <button onClick={onEditToggle}>Modifica</button>}
-            <button className="danger" onClick={onDelete}><Trash2 size={17} /> Elimina luogo</button>
-          </div>
+        </div>
+      )}
+
+      {detailsOpen && (
+        <div className="place-overlay" role="dialog" aria-modal="true" aria-label="Dettagli luogo">
+          <section className="place-overlay-card technical-dialog">
+            <div className="overlay-head"><h3>Dettagli luogo</h3><button onClick={() => setDetailsOpen(false)} aria-label="Chiudi dettagli"><X size={20} /></button></div>
+            <dl>
+              <div><dt>Coordinate</dt><dd>{place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}</dd></div>
+              <div><dt>Precisione GPS</dt><dd>{place.accuracyMeters ? `± ${Math.round(place.accuracyMeters)} m` : 'n/d'}</dd></div>
+              <div><dt>Creato il</dt><dd>{new Date(place.createdAt).toLocaleString('it-IT')}</dd></div>
+              <div><dt>Ultima modifica</dt><dd>{new Date(place.updatedAt).toLocaleString('it-IT')}</dd></div>
+            </dl>
+          </section>
+        </div>
+      )}
+
+      {notesOpen && (
+        <div className="place-overlay" role="dialog" aria-modal="true" aria-label="Note del luogo">
+          <section className="place-overlay-card notes-dialog">
+            <div className="overlay-head"><h3>Note</h3><button onClick={() => setNotesOpen(false)} aria-label="Chiudi note"><X size={20} /></button></div>
+            <p>{place.notes}</p>
+          </section>
+        </div>
+      )}
+
+      {openPhoto && (
+        <div className="place-overlay photo-viewer" role="dialog" aria-modal="true" aria-label="Foto del luogo">
+          <button className="photo-viewer-close" onClick={() => setOpenPhotoId(null)} aria-label="Chiudi foto"><X size={22} /></button>
+          <PhotoImage photo={openPhoto} alt={`Foto di ${place.name || 'questo luogo'}`} />
         </div>
       )}
     </Sheet>
   );
 };
 
-const PhotoRail = ({ photos, editing, onRemove }: { photos: PlacePhoto[]; editing: boolean; onRemove: (id: string) => void }) => {
-  if (!photos.length) return null;
+const PhotoRail = ({
+  photos,
+  editing = false,
+  onRemove,
+  onAddPhoto,
+  onOpenPhoto,
+}: {
+  photos: PlacePhoto[];
+  editing?: boolean;
+  onRemove?: (id: string) => void;
+  onAddPhoto: (file: File) => void;
+  onOpenPhoto: (id: string) => void;
+}) => {
+  const addPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) onAddPhoto(file);
+  };
+
   return (
-    <div className="photo-rail">
-      {photos.map((photo) => {
-        const url = URL.createObjectURL(photo.blob);
-        return (
+    <div className={`place-media ${photos.length === 0 ? 'is-empty' : ''}`}>
+      <div className="photo-rail">
+        {photos.map((photo) => (
           <figure key={photo.id}>
-            <img src={url} alt="" />
-            {editing && <button onClick={() => onRemove(photo.id)} aria-label="Elimina foto"><X size={14} /></button>}
+            <button className="photo-open" onClick={() => onOpenPhoto(photo.id)} aria-label="Apri foto">
+              <PhotoImage photo={photo} alt="" />
+            </button>
+            {editing && onRemove && <button className="photo-remove" onClick={() => onRemove(photo.id)} aria-label="Elimina foto"><X size={14} /></button>}
           </figure>
-        );
-      })}
+        ))}
+        {photos.length < 5 && (
+          <label className="photo-add-tile">
+            <Camera size={22} />
+            <span>{photos.length === 0 ? 'Aggiungi una foto' : 'Aggiungi'}</span>
+            <input type="file" accept="image/*" onChange={addPhoto} aria-label="Aggiungi una foto" />
+          </label>
+        )}
+      </div>
+      {photos.length > 0 && <span className="photo-count">{photos.length}/5</span>}
     </div>
   );
+};
+
+const PhotoImage = ({ photo, alt }: { photo: PlacePhoto; alt: string }) => {
+  const [url, setUrl] = useState('');
+
+  useEffect(() => {
+    const nextUrl = URL.createObjectURL(photo.blob);
+    setUrl(nextUrl);
+    return () => URL.revokeObjectURL(nextUrl);
+  }, [photo]);
+
+  return url ? <img src={url} alt={alt} /> : null;
 };
 
 const PlaceRow = ({ place, categories, right, onOpen }: { place: Place; categories: Category[]; right?: string; onOpen: () => void }) => (

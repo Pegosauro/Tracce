@@ -1,4 +1,4 @@
-/* Sheet UI polish: place view, edit mode and new trace form. */
+/* Sheet UI polish: compact place details and focused editing. */
 .bottom-sheet {
   scrollbar-width: thin;
 }
@@ -31,161 +31,564 @@
   font-size: 18px;
 }
 
-/* Place sheet: calmer visual hierarchy */
+/* Place header */
 .place-sheet .place-head {
-  grid-template-columns: 1fr 52px 52px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px 48px;
+  gap: 8px;
   align-items: start;
 }
 
+.place-title-block {
+  min-width: 0;
+}
+
 .place-sheet .place-head h2 {
-  font-size: 30px;
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 3px;
+  font-size: 28px;
   line-height: 1.02;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .place-sheet .place-head p {
-  font-size: 18px;
+  overflow: hidden;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .place-sheet .icon-button {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
 }
 
-.place-sheet .notes {
-  margin: 20px 0 18px;
-  font-size: 18px;
-  line-height: 1.42;
+.place-sheet .badge {
+  min-height: 27px;
+  margin: 7px 0 0;
+  padding: 0 10px;
+  font-size: 12px;
 }
 
-.place-sheet .technical {
-  gap: 7px;
-  padding: 16px 18px;
-  border-radius: 24px;
+/* Full place card stays fixed: secondary content opens as overlays. */
+.place-sheet.expanded {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  padding: 10px 16px max(14px, env(safe-area-inset-bottom));
 }
 
-.place-sheet .technical span {
-  font-size: 15px;
+.place-sheet.expanded .grabber,
+.place-sheet.expanded .place-head {
+  flex: 0 0 auto;
 }
 
-.place-sheet .technical strong {
-  font-size: 20px;
-  letter-spacing: -0.01em;
+.place-sheet.expanded .grabber {
+  margin-bottom: 10px;
 }
 
-.place-sheet .sheet-actions.vertical {
-  gap: 10px;
-  align-items: stretch;
-  margin-top: 18px;
+.place-sheet.expanded .place-head h2 {
+  font-size: 30px;
 }
 
-.place-sheet .sheet-actions.vertical button,
-.place-sheet .sheet-actions.vertical a {
-  width: 100%;
-  min-height: 58px;
-  justify-content: center;
-  font-size: 17px;
+.place-details-content {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 0 0;
 }
 
-.place-sheet .sheet-actions.vertical .danger {
-  margin-top: 10px;
-  border-color: color-mix(in srgb, var(--danger) 22%, var(--border));
-  background: color-mix(in srgb, var(--danger) 5%, var(--surface-muted));
+/* Horizontal media strip */
+.place-media {
+  position: relative;
+  flex: 0 0 auto;
+  margin: 2px 0 8px;
 }
 
-/* Edit mode, detected by the photo-add control. */
-.place-sheet:has(.photo-add) {
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+.place-media .photo-rail {
+  display: flex;
+  height: 96px;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
 }
 
-.place-sheet:has(.photo-add) .place-head {
-  position: sticky;
-  top: -10px;
-  z-index: 2;
-  margin: -10px -4px 8px;
-  padding: 10px 4px 8px;
-  background: linear-gradient(180deg, var(--surface) 76%, transparent);
-  backdrop-filter: blur(18px);
-}
-
-.place-sheet:has(.photo-add) label {
-  margin-top: 14px;
-  font-size: 15px;
-}
-
-.place-sheet:has(.photo-add) input,
-.place-sheet:has(.photo-add) select,
-.place-sheet:has(.photo-add) textarea {
-  min-height: 54px;
-  border-radius: 22px;
-  font-size: 16px;
-}
-
-.place-sheet:has(.photo-add) textarea {
-  min-height: 128px;
-}
-
-.place-sheet:has(.photo-add) .photo-add {
-  min-height: 50px;
-  margin-top: 16px;
-  padding: 0 18px;
-  border-radius: 999px;
-  font-size: 16px;
-}
-
-.place-sheet:has(.photo-add) .technical {
-  margin-top: 18px;
-}
-
-.place-sheet:has(.photo-add) .sheet-actions.vertical {
-  position: sticky;
-  bottom: 0;
-  z-index: 3;
-  display: grid;
-  gap: 10px;
-  margin: 18px -4px -8px;
-  padding: 14px 4px max(10px, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, transparent, var(--surface) 20%, var(--surface));
-  backdrop-filter: blur(18px);
-}
-
-.place-sheet:has(.photo-add) .sheet-actions.vertical a,
-.place-sheet:has(.photo-add) .sheet-actions.vertical button:nth-of-type(1) {
+.place-media .photo-rail::-webkit-scrollbar {
   display: none;
 }
 
-.place-sheet:has(.photo-add) .sheet-actions.vertical button:nth-of-type(2) {
-  order: 1;
+.place-media .photo-rail figure {
+  position: relative;
+  width: 112px;
+  height: 92px;
+  flex: 0 0 112px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 17px;
+  background: var(--surface-muted);
+  scroll-snap-align: start;
 }
 
-.place-sheet:has(.photo-add) .sheet-actions.vertical .primary {
-  order: 2;
-  min-height: 60px;
-  font-size: 18px;
+.place-media .photo-open {
+  position: static;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
 }
 
-.place-sheet:has(.photo-add) .sheet-actions.vertical .danger {
-  order: 3;
+.place-media .photo-open img,
+.photo-viewer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.place-media .photo-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.58);
+  color: white;
+}
+
+.photo-add-tile {
+  display: flex;
+  width: 104px;
+  height: 92px;
+  min-height: 92px;
+  flex: 0 0 104px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  border: 1px dashed color-mix(in srgb, var(--accent) 48%, var(--border));
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 760;
+  text-align: center;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.place-media.is-empty .photo-add-tile {
+  width: 100%;
+  flex-basis: 100%;
+  flex-direction: row;
+  font-size: 15px;
+}
+
+.photo-add-tile input {
+  display: none;
+}
+
+.photo-count {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  display: inline-flex;
+  min-width: 34px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(10, 23, 20, 0.64);
+  color: white;
+  font-size: 11px;
+  font-weight: 780;
+  pointer-events: none;
+}
+
+/* Tags and note preview use only the vertical space they need. */
+.place-sheet .place-tags {
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 0 0 8px;
+  padding-bottom: 1px;
+  scrollbar-width: none;
+}
+
+.place-sheet .place-tags::-webkit-scrollbar {
+  display: none;
+}
+
+.place-sheet .place-tags span {
+  min-height: 30px;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.note-preview {
+  display: flex;
+  min-height: 52px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--surface-muted);
+  color: var(--text);
+  text-align: left;
+}
+
+.note-preview > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.note-preview p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.note-preview.is-empty {
+  min-height: 46px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* One compact action row replaces the long vertical button list. */
+.place-action-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  flex: 0 0 auto;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 9px;
+}
+
+.place-action-bar button,
+.place-action-bar a {
+  display: flex;
+  min-width: 0;
+  height: 58px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 740;
+  text-align: center;
+}
+
+.place-action-bar button.active,
+.place-action-bar button:active,
+.place-action-bar a:active {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.place-more-menu {
+  position: absolute;
+  right: 0;
+  bottom: 68px;
+  z-index: 8;
+  display: grid;
+  width: min(238px, 82vw);
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+.place-more-menu button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.place-more-menu button:active {
+  background: var(--surface-muted);
+}
+
+.place-more-menu button.danger {
+  color: var(--danger);
+}
+
+/* Details, long notes and photos appear above the card without making it scroll. */
+.place-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  align-items: end;
+  padding: 16px;
+  border-radius: inherit;
+  background: rgba(5, 15, 12, 0.34);
+  backdrop-filter: blur(8px);
+}
+
+.place-overlay-card {
+  width: 100%;
+  max-height: min(72vh, 560px);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+.overlay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.place-sheet .overlay-head h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.overlay-head button,
+.photo-viewer-close {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.technical-dialog dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.technical-dialog dl div {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 12px;
+  padding: 11px 2px;
+  border-top: 1px solid var(--border);
+}
+
+.technical-dialog dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.technical-dialog dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 720;
+  text-align: right;
+  word-break: break-word;
+}
+
+.notes-dialog p {
+  max-height: 52vh;
+  overflow: auto;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.photo-viewer {
+  align-items: center;
+  justify-items: center;
+  background: rgba(2, 7, 6, 0.9);
+}
+
+.photo-viewer img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 18px;
+}
+
+.photo-viewer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  background: rgba(20, 28, 26, 0.72);
+  color: white;
+}
+
+/* Edit mode can scroll independently; the normal place card never does. */
+.place-sheet.is-editing .place-details-content {
+  display: block;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.place-sheet.is-editing .place-media {
+  margin-bottom: 6px;
+}
+
+.place-sheet.is-editing label:not(.photo-add-tile) {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.place-sheet.is-editing input,
+.place-sheet.is-editing select,
+.place-sheet.is-editing textarea {
+  min-height: 50px;
+  border-radius: 18px;
+  font-size: 16px;
+}
+
+.place-sheet.is-editing textarea {
+  min-height: 104px;
+}
+
+.place-edit-actions {
+  position: sticky;
+  bottom: -1px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 8px;
   margin-top: 12px;
+  padding: 10px 0 2px;
+  background: linear-gradient(180deg, transparent, var(--surface) 20%);
 }
 
-@media (max-width: 374px) {
-  .place-sheet .place-head {
-    grid-template-columns: 1fr 48px 48px;
-  }
+.place-edit-actions button {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-weight: 760;
+}
 
-  .place-sheet .place-head h2 {
+.place-edit-actions button.primary {
+  border: 0;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: white;
+}
+
+@media (max-width: 374px), (max-height: 700px) {
+  .place-sheet.expanded .place-head h2 {
     font-size: 27px;
   }
 
-  .place-sheet .icon-button {
-    width: 48px;
-    height: 48px;
+  .place-sheet .place-head {
+    grid-template-columns: minmax(0, 1fr) 44px 44px;
   }
 
-  .place-sheet .sheet-actions.vertical button,
-  .place-sheet .sheet-actions.vertical a {
-    min-height: 54px;
-    font-size: 16px;
+  .place-sheet .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .place-media .photo-rail {
+    height: 84px;
+  }
+
+  .place-media .photo-rail figure,
+  .photo-add-tile {
+    height: 80px;
+    min-height: 80px;
+  }
+
+  .place-media .photo-rail figure {
+    width: 100px;
+    flex-basis: 100px;
+  }
+
+  .photo-add-tile {
+    width: 94px;
+    flex-basis: 94px;
+  }
+
+  .note-preview {
+    min-height: 46px;
+  }
+
+  .place-action-bar button,
+  .place-action-bar a {
+    height: 54px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .place-overlay {
+    background: rgba(0, 4, 3, 0.54);
+  }
+
+  .photo-count {
+    background: rgba(0, 0, 0, 0.7);
   }
 }
