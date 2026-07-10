@@ -1,10 +1,12 @@
-const CACHE_NAME = 'tracce-v2';
+const CACHE_NAME = 'tracce-v3';
 const APP_BASE = self.registration.scope;
 const APP_SHELL = [
   APP_BASE,
   `${APP_BASE}index.html`,
   `${APP_BASE}manifest.webmanifest`,
   `${APP_BASE}icons/tracce.svg`,
+  `${APP_BASE}icons/tracce-light.svg`,
+  `${APP_BASE}icons/tracce-dark.svg`,
   `${APP_BASE}icons/lascia-traccia.svg`,
 ];
 
