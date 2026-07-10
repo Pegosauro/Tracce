@@ -132,6 +132,9 @@ export const MapView = ({
       zoomControl: false,
       attributionControl: false,
       preferCanvas: true,
+      touchZoom: true,
+      doubleClickZoom: true,
+      scrollWheelZoom: true,
     }).setView(fallbackCenter, 13);
 
     L.control.attribution({ prefix: false, position: 'topleft' }).addTo(map);
