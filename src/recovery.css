@@ -1,0 +1,36 @@
+.fatal-error {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: max(28px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom));
+  background: var(--bg, #f4faf7);
+  color: var(--text, #0f1d1a);
+  text-align: center;
+}
+
+.fatal-error h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.fatal-error p {
+  max-width: 430px;
+  margin: 0 auto;
+  color: var(--muted, #53655f);
+  line-height: 1.5;
+}
+
+.fatal-error button {
+  min-height: 48px;
+  width: fit-content;
+  margin: 8px auto 0;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 20px;
+  background: var(--accent, #078b78);
+  color: white;
+  font-weight: 750;
+  cursor: pointer;
+}
