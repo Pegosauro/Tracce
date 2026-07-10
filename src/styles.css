@@ -57,6 +57,7 @@ body,
 #root {
   width: 100%;
   height: 100%;
+  min-height: 100dvh;
   margin: 0;
   overflow: hidden;
   background: var(--page-bg);
@@ -111,6 +112,7 @@ a {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 100dvh;
   overflow: hidden;
   background: var(--bg);
   isolation: isolate;
@@ -220,6 +222,8 @@ a {
 .leaflet-host {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .leaflet-container {
@@ -412,8 +416,10 @@ a {
 }
 
 .floating.filter {
-  top: max(16px, env(safe-area-inset-top));
-  right: 16px;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  width: 54px;
+  height: 54px;
 }
 
 .floating.filter span {
@@ -428,7 +434,7 @@ a {
 }
 
 .floating.update-app {
-  top: max(16px, env(safe-area-inset-top));
+  top: max(12px, env(safe-area-inset-top));
   left: 50%;
   width: auto;
   height: 46px;
@@ -471,7 +477,7 @@ a {
 }
 
 .floating.locate-user {
-  right: 18px;
+  right: max(18px, calc(env(safe-area-inset-right) + 18px));
   bottom: max(92px, calc(env(safe-area-inset-bottom) + 92px));
   color: #0a84ff;
 }
@@ -882,7 +888,7 @@ textarea {
 
 .round-control {
   position: absolute;
-  bottom: max(24px, env(safe-area-inset-bottom));
+  bottom: max(14px, calc(env(safe-area-inset-bottom) + 14px));
   display: grid;
   width: 56px;
   height: 56px;
@@ -897,12 +903,12 @@ textarea {
 }
 
 .round-control.cancel {
-  left: 18px;
+  left: max(14px, calc(env(safe-area-inset-left) + 14px));
   background: #3a3a3c;
 }
 
 .round-control.confirm {
-  right: 18px;
+  right: max(14px, calc(env(safe-area-inset-right) + 14px));
   background: var(--accent);
 }
 
@@ -1047,6 +1053,7 @@ textarea {
   .app-shell {
     max-width: 520px;
     height: min(100%, 940px);
+    min-height: 0;
     max-height: 940px;
     margin: 0 auto;
     border-inline: 1px solid var(--border);

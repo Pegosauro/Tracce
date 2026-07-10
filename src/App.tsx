@@ -388,8 +388,16 @@ export const App = () => {
       {!manualMode && (
         <>
           <nav className={`section-dock ${menuOpen ? 'is-open' : ''}`} aria-label="Sezioni">
-            <button className="floating menu" onClick={() => setMenuOpen((open) => !open)} aria-label="Menu sezioni"><Menu size={22} /></button>
-            <div className="section-pill">
+            <button
+              className="floating menu"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-label="Menu sezioni"
+              aria-expanded={menuOpen}
+              aria-controls="section-menu"
+            >
+              <Menu size={22} />
+            </button>
+            <div id="section-menu" className="section-pill" aria-hidden={!menuOpen}>
               {sectionMeta.map(({ id, label, Icon }) => (
                 <button
                   key={id}

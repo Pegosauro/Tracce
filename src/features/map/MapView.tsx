@@ -148,7 +148,25 @@ export const MapView = ({
     mapRef.current = map;
     map.on('zoomend', () => setZoom(map.getZoom()));
 
+    // Safari/iOS can change the visible viewport after Leaflet has measured it
+    // (safe areas, address bar and orientation changes). Keep the tile grid in
+    // sync so the map always reaches every edge of the screen.
+    let resizeFrame = 0;
+    const refreshMapSize = () => {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(() => map.invalidateSize({ pan: false, debounceMoveend: true }));
+    };
+    const resizeObserver = new ResizeObserver(refreshMapSize);
+    resizeObserver.observe(containerRef.current);
+    window.visualViewport?.addEventListener('resize', refreshMapSize);
+    window.addEventListener('orientationchange', refreshMapSize);
+    window.setTimeout(refreshMapSize, 0);
+
     return () => {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeObserver.disconnect();
+      window.visualViewport?.removeEventListener('resize', refreshMapSize);
+      window.removeEventListener('orientationchange', refreshMapSize);
       map.remove();
       mapRef.current = null;
       layerRef.current = null;

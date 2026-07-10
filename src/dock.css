@@ -1,106 +1,124 @@
-/* Compact bottom dock: closed shows the active section menu button, open shows all sections. */
+/* Bottom navigation: one circular control expands into a compact four-item capsule. */
 .section-dock {
-  right: max(88px, calc(env(safe-area-inset-right) + 88px));
-  left: max(14px, env(safe-area-inset-left));
-  bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+  position: absolute;
+  left: max(14px, calc(env(safe-area-inset-left) + 14px));
+  bottom: max(14px, calc(env(safe-area-inset-bottom) + 14px));
   z-index: 660;
-  display: flex;
+  display: grid;
+  width: min(248px, calc(100vw - 104px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  height: 64px;
   align-items: center;
+  justify-items: start;
   pointer-events: none;
 }
 
-.section-dock .menu {
-  display: grid;
-  width: 58px;
-  height: 58px;
-  flex: 0 0 58px;
-  place-items: center;
-  border: 2px solid color-mix(in srgb, var(--border) 74%, transparent);
-  border-radius: 999px;
+.section-dock .menu,
+.section-pill {
+  grid-area: 1 / 1;
+  border: 1.5px solid color-mix(in srgb, var(--border) 82%, transparent);
   background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+  box-shadow: 0 12px 30px rgba(18, 34, 30, 0.17);
+  backdrop-filter: blur(20px) saturate(1.12);
+  -webkit-backdrop-filter: blur(20px) saturate(1.12);
+}
+
+.section-dock .menu {
+  position: static;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border-radius: 50%;
   color: var(--accent);
-  box-shadow: 0 12px 30px rgba(18, 34, 30, 0.16);
-  backdrop-filter: blur(20px);
   pointer-events: auto;
+  transform-origin: left center;
 }
 
 .section-dock .menu svg {
   width: 29px;
   height: 29px;
-  stroke-width: 2.5;
+  stroke-width: 2.45;
+  transform: translateY(-1px);
 }
 
-.section-dock .menu span {
-  display: none;
-}
-
-.section-dock.is-open .menu {
+.section-dock .menu span,
+.section-pill button span {
   display: none;
 }
 
 .section-pill {
-  display: none;
-}
-
-.section-dock.is-open .section-pill {
   display: flex;
-  width: 294px;
-  max-width: calc(100vw - 116px);
-  height: 58px;
-  flex: 0 1 294px;
-  gap: 5px;
+  width: 248px;
+  max-width: 100%;
+  height: 64px;
+  gap: 4px;
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
-  padding: 5px 8px;
-  border: 2px solid color-mix(in srgb, var(--border) 74%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
-  box-shadow: 0 12px 30px rgba(18, 34, 30, 0.16);
-  backdrop-filter: blur(20px);
-  pointer-events: auto;
+  padding: 5px 6px;
+  border-radius: 32px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scaleX(0.24) translateX(-8px);
+  transform-origin: left center;
 }
 
 .section-pill button {
   display: grid;
   min-width: 0;
-  height: 46px;
+  height: 52px;
   flex: 1 1 0;
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: 26px;
   background: transparent;
-  color: color-mix(in srgb, var(--text) 82%, var(--muted));
+  color: color-mix(in srgb, var(--text) 78%, var(--muted));
   font-size: 0;
   cursor: pointer;
+  opacity: 0;
+  transform: translateX(-12px) scale(0.72);
 }
 
 .section-pill button.active {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
   color: var(--accent);
   box-shadow:
-    inset 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent),
-    0 0 0 1px rgba(255, 255, 255, 0.72);
-}
-
-.section-pill button span {
-  display: none;
+    inset 0 0 0 2px color-mix(in srgb, var(--accent) 48%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.64);
 }
 
 .section-pill button svg {
-  width: 29px;
-  height: 29px;
-  stroke-width: 2.5;
+  width: 27px;
+  height: 27px;
+  stroke-width: 2.4;
 }
 
-.section-pill button.active svg,
-.section-dock .menu svg {
+.section-pill button.active svg {
   transform: translateY(-1px);
 }
 
+.section-dock.is-open .menu {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.78) rotate(-9deg);
+}
+
+.section-dock.is-open .section-pill {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scaleX(1) translateX(0);
+}
+
+.section-dock.is-open .section-pill button {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
 .floating.leave-trace {
-  right: max(11px, env(safe-area-inset-right));
+  right: max(11px, calc(env(safe-area-inset-right) + 11px));
   bottom: max(11px, calc(env(safe-area-inset-bottom) + 11px));
   z-index: 670;
   width: 70px;
@@ -120,7 +138,6 @@
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 12px 18px rgba(7, 104, 96, 0.3));
-  transition: transform 0.14s ease, filter 0.14s ease;
 }
 
 .floating.leave-trace:active img {
@@ -132,32 +149,72 @@
   box-shadow: var(--ring);
 }
 
-@media (max-width: 374px) {
-  .section-dock {
-    right: max(80px, calc(env(safe-area-inset-right) + 80px));
+@media (prefers-reduced-motion: no-preference) {
+  .section-dock .menu {
+    transition: opacity 150ms ease, transform 240ms cubic-bezier(0.2, 0.85, 0.25, 1.12);
   }
 
-  .section-dock .menu {
-    width: 54px;
-    height: 54px;
-    flex-basis: 54px;
+  .section-pill {
+    transition:
+      transform 390ms cubic-bezier(0.18, 0.9, 0.22, 1.08),
+      opacity 160ms ease,
+      visibility 0s linear 390ms;
   }
 
   .section-dock.is-open .section-pill {
-    width: 260px;
-    max-width: calc(100vw - 106px);
-    flex-basis: 260px;
-    padding: 5px 7px;
+    transition:
+      transform 390ms cubic-bezier(0.18, 0.9, 0.22, 1.08),
+      opacity 170ms ease,
+      visibility 0s;
   }
 
   .section-pill button {
-    height: 42px;
+    transition:
+      transform 300ms cubic-bezier(0.2, 0.9, 0.25, 1.16),
+      opacity 170ms ease,
+      color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .section-dock.is-open .section-pill button:nth-child(1) { transition-delay: 55ms; }
+  .section-dock.is-open .section-pill button:nth-child(2) { transition-delay: 90ms; }
+  .section-dock.is-open .section-pill button:nth-child(3) { transition-delay: 125ms; }
+  .section-dock.is-open .section-pill button:nth-child(4) { transition-delay: 160ms; }
+
+  .floating.leave-trace img {
+    transition: transform 140ms ease, filter 140ms ease;
+  }
+}
+
+@media (max-width: 374px) {
+  .section-dock {
+    width: min(226px, calc(100vw - 96px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    height: 60px;
+  }
+
+  .section-dock .menu,
+  .section-pill {
+    height: 60px;
+  }
+
+  .section-dock .menu {
+    width: 60px;
+  }
+
+  .section-pill {
+    width: 226px;
+    padding: 5px;
+  }
+
+  .section-pill button {
+    height: 48px;
   }
 
   .section-dock .menu svg,
   .section-pill button svg {
-    width: 26px;
-    height: 26px;
+    width: 25px;
+    height: 25px;
   }
 
   .floating.leave-trace {
@@ -173,16 +230,16 @@
 
 @media (prefers-color-scheme: dark) {
   .section-dock .menu,
-  .section-dock.is-open .section-pill {
-    border-color: rgba(223, 255, 247, 0.14);
+  .section-pill {
+    border-color: rgba(223, 255, 247, 0.15);
     background: color-mix(in srgb, var(--control) 92%, transparent);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
   }
 
   .section-pill button.active {
     box-shadow:
-      inset 0 0 0 3px color-mix(in srgb, var(--accent) 48%, transparent),
-      0 0 0 1px rgba(255, 255, 255, 0.12);
+      inset 0 0 0 2px color-mix(in srgb, var(--accent) 52%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   .floating.leave-trace img {
