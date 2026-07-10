@@ -1,32 +1,19 @@
-const CACHE_NAME = 'tracce-v3';
-const APP_BASE = self.registration.scope;
-const APP_SHELL = [
-  APP_BASE,
-  `${APP_BASE}index.html`,
-  `${APP_BASE}manifest.webmanifest`,
-  `${APP_BASE}icons/tracce.svg`,
-  `${APP_BASE}icons/tracce-light.svg`,
-  `${APP_BASE}icons/tracce-dark.svg`,
-  `${APP_BASE}icons/lascia-traccia.svg`,
-];
+const LEGACY_CACHE_PREFIX = 'tracce-';
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))),
-  );
-  self.clients.claim();
-});
+    (async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.filter((name) => name.startsWith(LEGACY_CACHE_PREFIX)).map((name) => caches.delete(name)));
 
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request).then((cached) => cached || caches.match(`${APP_BASE}index.html`))),
+      await self.registration.unregister();
+
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      await Promise.all(clients.map((client) => client.navigate(client.url)));
+    })(),
   );
 });
