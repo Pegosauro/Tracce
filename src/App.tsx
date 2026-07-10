@@ -159,6 +159,7 @@ export const App = () => {
       return;
     }
     setDraft(null);
+    setMenuOpen(false);
     setManualMode({ kind: 'draft' });
     setActiveSection('map');
   };
@@ -305,26 +306,30 @@ export const App = () => {
         {(filters.query || filters.categoryIds.length || filters.tags.length || filters.favoritesOnly || filters.incompleteOnly) && <span />}
       </button>
 
-      <nav className={`section-dock ${menuOpen ? 'is-open' : ''}`} aria-label="Sezioni">
-        <button className="floating menu" onClick={() => setMenuOpen((open) => !open)} aria-label="Menu sezioni"><Menu size={22} /></button>
-        <div className="section-pill">
-          {sectionMeta.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              className={activeSection === id ? 'active' : ''}
-              onClick={() => {
-                setActiveSection(id);
-                setMenuOpen(false);
-              }}
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      {!manualMode && (
+        <>
+          <nav className={`section-dock ${menuOpen ? 'is-open' : ''}`} aria-label="Sezioni">
+            <button className="floating menu" onClick={() => setMenuOpen((open) => !open)} aria-label="Menu sezioni"><Menu size={22} /></button>
+            <div className="section-pill">
+              {sectionMeta.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  className={activeSection === id ? 'active' : ''}
+                  onClick={() => {
+                    setActiveSection(id);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
 
-      <button className="floating leave-trace" onClick={startTrace} aria-label="Lascia Traccia"><MapPin size={24} fill="currentColor" /></button>
+          <button className="floating leave-trace" onClick={startTrace} aria-label="Lascia Traccia"><MapPin size={24} fill="currentColor" /></button>
+        </>
+      )}
 
       {filtersOpen && (
         <FilterSheet
@@ -362,6 +367,7 @@ export const App = () => {
           onSave={updatePlace}
           onEditToggle={() => setEditingPlaceId(editingPlaceId === selectedPlace.id ? null : selectedPlace.id)}
           onEditPosition={() => {
+            setMenuOpen(false);
             setManualMode({ kind: 'edit', placeId: selectedPlace.id });
             setActiveSection('map');
           }}
