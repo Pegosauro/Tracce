@@ -23,6 +23,7 @@ type MapViewProps = {
 const fallbackCenter: [number, number] = [45.4642, 9.19];
 const minLiveUpdateMs = 3000;
 const minLiveMoveMeters = 2;
+const manualPickerIconUrl = `${import.meta.env.BASE_URL}icons/lascia-traccia.svg`;
 
 const approximateDistanceMeters = (a: GeoPoint, b: GeoPoint) => {
   const latMeters = (b.latitude - a.latitude) * 111_320;
@@ -306,7 +307,7 @@ export const MapView = ({
       )}
       {manualSelect && (
         <div className="manual-picker" aria-live="polite">
-          <div className="center-pin" />
+          <img className="center-pin" src={manualPickerIconUrl} alt="" aria-hidden="true" />
           <button className="round-control cancel" onClick={onManualCancel} aria-label="Annulla scelta posizione">×</button>
           <button className="round-control confirm" onClick={confirmManual} aria-label="Conferma posizione">✓</button>
         </div>
