@@ -9,6 +9,7 @@ import {
   Menu,
   Navigation,
   Plus,
+  RefreshCw,
   Search,
   Settings,
   Star,
@@ -76,6 +77,8 @@ export const App = () => {
   const [mapUnavailable, setMapUnavailable] = useState(false);
   const [forceMapUnavailable, setForceMapUnavailable] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updatingApp, setUpdatingApp] = useState(false);
 
   const categoryNames = useMemo(() => new Map(categories.map((category) => [category.id, category.name])), [categories]);
   const filteredPlaces = useMemo(() => {
@@ -139,6 +142,40 @@ export const App = () => {
     autoLocateStartedRef.current = true;
     void locateCurrentPosition({ focusMap: false });
   }, [locateCurrentPosition, settings?.onboardingCompleted]);
+
+  const checkForAppUpdate = useCallback(async () => {
+    try {
+      const checkUrl = new URL(import.meta.env.BASE_URL, window.location.origin);
+      checkUrl.searchParams.set('update-check', Date.now().toString());
+
+      const response = await fetch(checkUrl.toString(), { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const latestDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const latestScriptPath = latestDocument.querySelector<HTMLScriptElement>('script[type="module"][src]')?.getAttribute('src');
+      const activeScript = Array.from(document.scripts).find((script) => script.type === 'module' && script.src.includes('/assets/index-'));
+      if (!latestScriptPath || !activeScript) return;
+
+      const latestScriptUrl = new URL(latestScriptPath, response.url).href;
+      if (latestScriptUrl !== activeScript.src) setUpdateAvailable(true);
+    } catch {
+      // A network error simply postpones the next update check.
+    }
+  }, []);
+
+  useEffect(() => {
+    void checkForAppUpdate();
+    const intervalId = window.setInterval(checkForAppUpdate, 5 * 60 * 1000);
+    const checkWhenVisible = () => {
+      if (document.visibilityState === 'visible') void checkForAppUpdate();
+    };
+    document.addEventListener('visibilitychange', checkWhenVisible);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', checkWhenVisible);
+    };
+  }, [checkForAppUpdate]);
 
   const startTrace = async () => {
     try {
@@ -236,6 +273,36 @@ export const App = () => {
     await locateCurrentPosition();
   };
 
+  const updateApplication = async () => {
+    if (updatingApp) return;
+    setUpdatingApp(true);
+    setNotice('Controllo aggiornamenti...');
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(async (registration) => {
+          try {
+            await registration.update();
+          } finally {
+            await registration.unregister();
+          }
+        }));
+      }
+
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.filter((name) => name.startsWith('tracce-')).map((name) => caches.delete(name)));
+      }
+
+      const freshUrl = new URL(window.location.href);
+      freshUrl.searchParams.set('update', Date.now().toString());
+      window.location.replace(freshUrl.toString());
+    } catch {
+      window.location.reload();
+    }
+  };
+
   const removeCategory = async (category: Category) => {
     if (!window.confirm(`Eliminare la categoria "${category.name}"? I luoghi passeranno a Senza categoria.`)) return;
     await categoryRepository.remove(category.id);
@@ -305,6 +372,18 @@ export const App = () => {
         <Filter size={22} />
         {(filters.query || filters.categoryIds.length || filters.tags.length || filters.favoritesOnly || filters.incompleteOnly) && <span />}
       </button>
+
+      {updateAvailable && (
+        <button
+          className={`floating update-app ${updatingApp ? 'is-updating' : ''}`}
+          onClick={updateApplication}
+          aria-label="Aggiornamento disponibile. Aggiorna applicazione"
+          disabled={updatingApp}
+        >
+          <RefreshCw size={18} />
+          <span>{updatingApp ? 'Aggiorno...' : 'Aggiorna'}</span>
+        </button>
+      )}
 
       {!manualMode && (
         <>
