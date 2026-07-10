@@ -1,6 +1,12 @@
-const CACHE_NAME = 'tracce-v1';
+const CACHE_NAME = 'tracce-v2';
 const APP_BASE = self.registration.scope;
-const APP_SHELL = [APP_BASE, `${APP_BASE}index.html`, `${APP_BASE}manifest.webmanifest`, `${APP_BASE}icons/tracce.svg`];
+const APP_SHELL = [
+  APP_BASE,
+  `${APP_BASE}index.html`,
+  `${APP_BASE}manifest.webmanifest`,
+  `${APP_BASE}icons/tracce.svg`,
+  `${APP_BASE}icons/lascia-traccia.svg`,
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
