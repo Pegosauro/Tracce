@@ -106,8 +106,11 @@
 }
 
 .section-dock.is-open .section-pill {
+  width: 248px;
+  max-width: 100%;
   opacity: 1;
   visibility: visible;
+  padding: 5px 6px;
   pointer-events: auto;
   transform: scaleX(1) translateX(0);
 }
@@ -203,6 +206,11 @@
   }
 
   .section-pill {
+    width: 226px;
+    padding: 5px;
+  }
+
+  .section-dock.is-open .section-pill {
     width: 226px;
     padding: 5px;
   }
