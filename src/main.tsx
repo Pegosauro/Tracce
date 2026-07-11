@@ -4,8 +4,10 @@ import 'leaflet/dist/leaflet.css';
 import './styles.css';
 import './dock.css';
 import './sheetPolish.css';
+import './sheetGestures.css';
 import './recovery.css';
 import './dockBehavior';
+import './sheetGestures';
 import { App } from './App';
 
 const clearLegacyRuntime = async () => {
