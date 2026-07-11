@@ -8,6 +8,7 @@ PWA mobile-first per salvare luoghi personali tramite GPS o scelta manuale su ma
 - Salvataggio luoghi locale via IndexedDB
 - Onboarding primo avvio
 - Flusso "Lascia Traccia" con GPS o selezione manuale
+- Pannelli inferiori richiudibili trascinando la maniglia verso il basso
 - Categorie, tag, preferiti e filtri
 - Elenco alfabetico e luoghi vicini
 - Scheda luogo con note, coordinate, foto e azioni Maps
